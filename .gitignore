@@ -1,0 +1,7 @@
+# IDE specific metadata
+.idea
+
+# Binaries
+build/package/ping/ping
+build/package/pong/pong
+
