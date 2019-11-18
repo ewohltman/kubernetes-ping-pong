@@ -1,0 +1,33 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ping
+  name: ping
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ping
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ping
+    spec:
+      containers:
+        - image: ewohltman/ping:latest
+          imagePullPolicy: Always
+          name: ping
+          resources: {}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

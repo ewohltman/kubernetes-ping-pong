@@ -1,0 +1,33 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pong
+  name: pong
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pong
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pong
+    spec:
+      containers:
+        - image: ewohltman/pong:latest
+          imagePullPolicy: Always
+          name: pong
+          resources: {}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
