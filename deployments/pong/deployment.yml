@@ -2,10 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: pong
   labels:
     app: pong
-  name: pong
-  namespace: default
 spec:
   replicas: 1
   selector:
@@ -18,6 +17,8 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      annotations:
+        linkerd.io/inject: enabled
       labels:
         app: pong
     spec:
@@ -25,6 +26,8 @@ spec:
         - image: ewohltman/pong:latest
           imagePullPolicy: Always
           name: pong
+          ports:
+            - containerPort: 30003
           resources: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always

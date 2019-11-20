@@ -2,17 +2,18 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: ping
   labels:
     app: ping
-  name: ping
-  namespace: default
 spec:
   externalTrafficPolicy: Cluster
+  type: NodePort
   ports:
-    - port: 8080
-      targetPort: 8080
+    - name: http
+      nodePort: 30000
+      port: 30000
+      targetPort: 30001
       protocol: TCP
   selector:
     app: ping
   sessionAffinity: None
-  type: NodePort
