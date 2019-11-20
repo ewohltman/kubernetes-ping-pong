@@ -16,7 +16,7 @@ func New(port string, mux http.Handler, errorLogger *log.Logger) *http.Server {
 	}
 
 	return &http.Server{
-		Addr:     ":" + port,
+		Addr:     "0.0.0.0:" + port,
 		Handler:  mux,
 		ErrorLog: errorLogger,
 	}
@@ -38,7 +38,9 @@ func Start(server *http.Server) chan struct{} {
 	}()
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
-		server.ErrorLog.Fatalf("HTTP server ListenAndServe: %v", err)
+		server.ErrorLog.Printf("HTTP server ListenAndServe: %v", err)
+
+		close(shutdown)
 	}
 
 	return shutdown

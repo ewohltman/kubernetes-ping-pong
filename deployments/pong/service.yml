@@ -2,17 +2,18 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: pong
   labels:
     app: pong
-  name: pong
-  namespace: default
 spec:
   externalTrafficPolicy: Cluster
+  type: NodePort
   ports:
-    - port: 8080
-      targetPort: 8080
+    - name: http
+      nodePort: 30002
+      port: 30002
+      targetPort: 30003
       protocol: TCP
   selector:
     app: pong
   sessionAffinity: None
-  type: NodePort
