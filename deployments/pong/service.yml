@@ -6,14 +6,12 @@ metadata:
   labels:
     app: pong
 spec:
-  externalTrafficPolicy: Cluster
-  type: NodePort
   ports:
-    - name: http
-      nodePort: 30002
-      port: 30002
-      targetPort: 30003
-      protocol: TCP
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
   selector:
     app: pong
   sessionAffinity: None
+  type: ClusterIP

@@ -13,7 +13,7 @@ import (
 const (
 	ping           = "Ping!"
 	pong           = "Pong!"
-	pongServiceURL = "http://pong.default.svc.cluster.local:30002"
+	pongServiceURL = "http://pong.default.svc.cluster.local"
 )
 
 func Ping(logger *log.Logger, httpClient *http.Client) http.HandlerFunc {

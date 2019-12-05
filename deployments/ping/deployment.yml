@@ -27,7 +27,7 @@ spec:
           imagePullPolicy: Always
           name: ping
           ports:
-            - containerPort: 30001
+            - containerPort: 8080
           resources: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
