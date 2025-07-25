@@ -2,46 +2,35 @@ package server
 
 import (
 	"context"
-	"log"
+	"errors"
+	"log/slog"
 	"net/http"
-	"os"
-	"os/signal"
 )
 
-const defaultPort = "8080"
+const port = "8080"
 
-func New(port string, mux http.Handler, errorLogger *log.Logger) *http.Server {
-	if port == "" {
-		port = defaultPort
-	}
-
+func New(mux http.Handler) *http.Server {
 	return &http.Server{
-		Addr:     "0.0.0.0:" + port,
-		Handler:  mux,
-		ErrorLog: errorLogger,
+		Addr:    "0.0.0.0:" + port,
+		Handler: mux,
 	}
 }
 
-func Start(server *http.Server) chan struct{} {
-	shutdown := make(chan struct{})
-
+func Start(ctx context.Context, log *slog.Logger, server *http.Server) error {
 	go func() {
-		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, os.Interrupt)
-		<-sigint
+		<-ctx.Done()
+		shutdownCtx := context.Background()
 
-		if err := server.Shutdown(context.Background()); err != nil {
-			server.ErrorLog.Printf("HTTP server Shutdown: %v", err)
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			log.ErrorContext(shutdownCtx, err.Error())
 		}
-
-		close(shutdown)
 	}()
 
-	if err := server.ListenAndServe(); err != http.ErrServerClosed {
-		server.ErrorLog.Printf("HTTP server ListenAndServe: %v", err)
-
-		close(shutdown)
+	if err := server.ListenAndServe(); err != nil {
+		if !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
 	}
 
-	return shutdown
+	return nil
 }

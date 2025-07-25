@@ -1,7 +1,7 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: ping
+  name: pong
   annotations:
     networking.istio.io/service-type: ClusterIP
 spec:
@@ -17,15 +17,15 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: ping
+  name: pong
 spec:
   parentRefs:
-    - name: ping
+    - name: pong
   rules:
     - matches:
         - path:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: ping
+        - name: pong
           port: 8080

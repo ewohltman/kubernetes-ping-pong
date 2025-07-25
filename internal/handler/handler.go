@@ -1,118 +1,70 @@
 package handler
 
 import (
-	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
+	"log/slog"
 	"net/http"
-	"strconv"
 )
 
 const (
-	ping           = "Ping!"
-	pong           = "Pong!"
-	pongServiceURL = "http://pong.default.svc.cluster.local"
+	ping           = "ping!"
+	pong           = "pong!"
+	pongServiceURL = "http://pong-istio.default.svc.cluster.local"
 )
 
-func Ping(logger *log.Logger, httpClient *http.Client) http.HandlerFunc {
+func Ping(log *slog.Logger, httpClient *http.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger.Print(ping)
-
 		defer func() {
-			err := r.Body.Close()
-			if err != nil {
-				logger.Printf("error closing ping request body: %v", err)
-			}
+			_, _ = io.Copy(io.Discard, r.Body)
+			_ = r.Body.Close()
 		}()
 
-		_, err := io.Copy(ioutil.Discard, r.Body)
+		log.Info(ping)
+
+		req, err := http.NewRequest(http.MethodGet, pongServiceURL, http.NoBody)
 		if err != nil {
-			err = fmt.Errorf("error discarding ping request body: %w", err)
-			logger.Printf("%s", err)
+			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		buf := bytes.NewBufferString(ping)
-
-		pongReq, err := http.NewRequest(http.MethodPost, pongServiceURL, buf)
+		resp, err := httpClient.Do(req)
 		if err != nil {
-			err = fmt.Errorf("error creating pong request: %w", err)
-			logger.Printf("%s", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		pongResp, err := httpClient.Do(pongReq)
-		if err != nil {
-			err = fmt.Errorf("error performing pong request: %w", err)
-			logger.Printf("%s", err)
+			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		defer func() {
-			err := pongResp.Body.Close()
-			if err != nil {
-				logger.Printf("Error closing pong response body: %v", err)
-			}
+			_, _ = io.Copy(io.Discard, resp.Body)
+			_ = resp.Body.Close()
 		}()
 
-		pongBody, err := ioutil.ReadAll(pongResp.Body)
-		if err != nil {
-			err = fmt.Errorf("error reading pong response body: %w", err)
-			logger.Printf("%s", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if resp.StatusCode != http.StatusOK {
+			err = fmt.Errorf("invalid response code: %d", resp.StatusCode)
+			log.Error(err.Error())
+			http.Error(w, err.Error(), resp.StatusCode)
 			return
 		}
 
-		if pongResp.StatusCode != http.StatusOK {
-			err = fmt.Errorf("invalid pong response code: %d", pongResp.StatusCode)
-			logger.Printf("%s", err)
-			http.Error(w, err.Error(), pongResp.StatusCode)
-		}
-
-		w.Header().Set("Content-Length", strconv.Itoa(len(pongBody)))
-
-		_, err = w.Write(pongBody)
-		if err != nil {
-			err = fmt.Errorf("error writing ping response: %w", err)
-			logger.Printf("%s", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if _, err := w.Write(nil); err != nil {
+			log.Error(err.Error())
 		}
 	}
 }
 
-func Pong(logger *log.Logger) http.HandlerFunc {
+func Pong(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger.Print(pong)
-
 		defer func() {
-			err := r.Body.Close()
-			if err != nil {
-				logger.Printf("error closing pong request body: %v", err)
-			}
+			_, _ = io.Copy(io.Discard, r.Body)
+			_ = r.Body.Close()
 		}()
 
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			err = fmt.Errorf("error reading pong request body: %w", err)
-			logger.Printf("%s", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		log.Info(pong)
 
-		body = append(body, []byte("\n"+pong)...)
-
-		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
-
-		_, err = w.Write(body)
-		if err != nil {
-			err = fmt.Errorf("error writing pong response: %w", err)
-			logger.Printf("%s", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if _, err := w.Write(nil); err != nil {
+			log.Error(err.Error())
 		}
 	}
 }
