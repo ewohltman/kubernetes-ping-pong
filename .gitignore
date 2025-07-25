@@ -1,0 +1,10 @@
+# IDE specific metadata
+.idea/
+kubernetes-ping-pong.iml
+
+# Test artifacts
+coverage.out
+
+# Binaries
+build/package/ping/ping
+build/package/pong/pong
