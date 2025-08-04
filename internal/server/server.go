@@ -5,9 +5,13 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 )
 
-const port = "8080"
+const (
+	port         = "8080"
+	shutdownTime = 5 * time.Second
+)
 
 func New(mux http.Handler) *http.Server {
 	return &http.Server{
@@ -19,10 +23,11 @@ func New(mux http.Handler) *http.Server {
 func Start(ctx context.Context, log *slog.Logger, server *http.Server) error {
 	go func() {
 		<-ctx.Done()
-		shutdownCtx := context.Background()
+		shutdownCtx, cancelCtx := context.WithTimeout(context.Background(), shutdownTime)
+		defer cancelCtx()
 
 		if err := server.Shutdown(shutdownCtx); err != nil {
-			log.ErrorContext(shutdownCtx, err.Error())
+			log.ErrorContext(shutdownCtx, "server shutdown failed", "error", err)
 		}
 	}()
 
