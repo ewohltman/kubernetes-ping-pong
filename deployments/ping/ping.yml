@@ -40,9 +40,17 @@ spec:
         version: v1
     spec:
       serviceAccountName: ping
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
       containers:
         - name: ping
           image: ewohltman/ping:latest
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+          env:
+            - name: PONG_SERVICE_URL
+              value: "http://pong-istio.default.svc.cluster.local"
           ports:
             - containerPort: 8080

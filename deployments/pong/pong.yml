@@ -40,9 +40,14 @@ spec:
         version: v1
     spec:
       serviceAccountName: pong
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
       containers:
         - name: pong
           image: ewohltman/pong:latest
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
           ports:
             - containerPort: 8080
