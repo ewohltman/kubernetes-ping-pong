@@ -24,14 +24,14 @@ func Ping(log *slog.Logger, httpClient *http.Client, pongServiceURL string) http
 		req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, pongServiceURL, http.NoBody)
 		if err != nil {
 			log.ErrorContext(r.Context(), "failed to create pong request", "error", err)
-			http.Error(w, "failed to create pong request", http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("failed to create pong request: %s", err), http.StatusInternalServerError)
 			return
 		}
 
 		resp, err := httpClient.Do(req)
 		if err != nil {
 			log.ErrorContext(r.Context(), "error performing pong request", "error", err)
-			http.Error(w, "error performing pong request", http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("error performing pong request: %s", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -43,7 +43,7 @@ func Ping(log *slog.Logger, httpClient *http.Client, pongServiceURL string) http
 		if resp.StatusCode != http.StatusOK {
 			err = fmt.Errorf("invalid response code: %d", resp.StatusCode)
 			log.ErrorContext(r.Context(), "error validating response", "error", err)
-			http.Error(w, "error validating response", resp.StatusCode)
+			http.Error(w, fmt.Sprintf("error validating response: %s", err), http.StatusInternalServerError)
 			return
 		}
 
